@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-# Install this repo's models, world and gimbal camera into a local (non-Docker)
-# PX4 + Gazebo setup. Safe to run again after changing models/, worlds/ or
+# Drone_PX4
+# Install this repo's models, world and gimbal camera into a local
+# PX4 + Gazebo setup. Safe to run again after changing sim/models/, sim/worlds/ or
 # setup_gimbal.py.
 #
 # Usage: ./setup_local.sh            (PX4 in ~/PX4-Autopilot)
@@ -22,14 +22,14 @@ fi
 
 # 1. Gazebo models
 mkdir -p "$GZ_MODELS_DIR"
-for model in "$REPO_DIR"/models/*/; do
+for model in "$REPO_DIR"/sim/models/*/; do
     cp -r "$model" "$GZ_MODELS_DIR/"
 done
 echo "Copied models to $GZ_MODELS_DIR"
 
 # 2. World
-cp "$REPO_DIR/worlds/default.sdf" "$PX4_WORLDS_DIR/default.sdf"
-echo "Copied worlds/default.sdf to $PX4_WORLDS_DIR"
+cp "$REPO_DIR/sim/worlds/default.sdf" "$PX4_WORLDS_DIR/default.sdf"
+echo "Copied sim/worlds/default.sdf to $PX4_WORLDS_DIR"
 
 # 3. Gimbal: setup_gimbal.py adds joints on every run, so always start from the
 #    unmodified drone model, which is backed up on the first run.
@@ -43,7 +43,7 @@ if [ ! -f "$DRONE_SDF_ORIG" ]; then
     echo "Backed up original drone model to $DRONE_SDF_ORIG"
 fi
 cp "$DRONE_SDF_ORIG" "$DRONE_SDF"
-(cd "$REPO_DIR" && python3 -c "import setup_gimbal; setup_gimbal.MODEL_PATH = '$DRONE_SDF'; setup_gimbal.main()")
+(cd "$REPO_DIR/sim" && python3 -c "import setup_gimbal; setup_gimbal.MODEL_PATH = '$DRONE_SDF'; setup_gimbal.main()")
 
 # 4. Environment
 if ! grep -q "GZ_SIM_RESOURCE_PATH=.*\.gz/models" "$HOME/.bashrc"; then
@@ -53,7 +53,7 @@ fi
 
 # 5. Fine-tuned YOLO weights are not stored in git; download them from the release
 WEIGHTS="$REPO_DIR/finetune/runs/yolov8m_sim/weights/best.pt"
-WEIGHTS_URL="https://github.com/NGUYEN-UY-THUAT/px4-drone-traffic-yolov8/releases/download/v1.0/best.pt"
+WEIGHTS_URL="https://github.com/NGUYEN-UY-THUAT/Drone_PX4/releases/download/v1.0/best.pt"
 if [ ! -f "$WEIGHTS" ]; then
     mkdir -p "$(dirname "$WEIGHTS")"
     if curl -fL -o "$WEIGHTS" "$WEIGHTS_URL"; then

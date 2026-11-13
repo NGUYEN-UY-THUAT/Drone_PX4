@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture an auto-labelled YOLO dataset from worlds/datagen.sdf.
+"""Capture an auto-labelled YOLO dataset from sim/worlds/datagen.sdf.
 
 For every sample the traffic vehicles and pedestrians are scattered on the
 road, the 'datacam' camera is placed at a random altitude / gimbal pitch /
@@ -7,7 +7,7 @@ heading looking at the road, and the RGB frame is saved together with the
 2D boxes from the bounding-box camera (Label plugin value = COCO id + 1).
 
 Run with the system python3 (gz-transport bindings) while
-`gz sim -s -r worlds/datagen.sdf` is running (GZ_IP=127.0.0.1):
+`gz sim -s -r sim/worlds/datagen.sdf` is running (GZ_IP=127.0.0.1):
 
     python3 finetune/collect.py --out finetune/data --n 2000 --seed 0
 """
@@ -27,12 +27,14 @@ from gz.transport13 import Node
 from gz.msgs10.annotated_axis_aligned_2d_box_v_pb2 import AnnotatedAxisAligned2DBox_V
 from gz.msgs10.image_pb2 import Image
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'sim'))
 from traffic import ALONG, LANES, NORMAL, ORIGIN, S_MAX, S_MIN, VEHICLES, height  # noqa: E402
 
-PEDESTRIANS = ['casual_female_1', 'casual_female_2']
+PEDESTRIANS = [f'casual_female_{i}' for i in range(1, 15)]  # see make_datagen_world.py
 MIN_BOX_PX = 6       # drop boxes smaller than this (width or height)
 VAL_FRACTION = 0.15
+PERSON_FOCUS = 0.5   # share of frames aimed at a pedestrian (lower altitude)
+BIKE_FOCUS = 0.6     # share of the remaining frames aimed at a motorbike
 
 
 def quat(roll, pitch, yaw):
@@ -71,19 +73,31 @@ def scatter_traffic():
         yaw = ROAD_YAW + (0.0 if direction > 0 else math.pi) + random.gauss(0, 0.08)
         x, y = road_xy(s, lat)
         poses.append((name, (x, y, height(s)), quat(0, 0, yaw)))
+    # Pedestrians: on the pavements, on the road, and in small groups
+    ped_spots = []
     for name in PEDESTRIANS:
-        s, lat = random.uniform(S_MIN, S_MAX), random.choice([-6.0, -5.5, 9.5, 10.0, random.uniform(-4, 8)])
+        if ped_spots and random.random() < 0.35:   # walk together with a previous one
+            s, lat = ped_spots[-1]
+            s, lat = s + random.uniform(-1.5, 1.5), lat + random.uniform(-1.0, 1.0)
+        else:
+            s = random.uniform(S_MIN, S_MAX)
+            lat = random.choice([random.uniform(-7.0, -5.0), random.uniform(9.0, 11.0),
+                                 random.uniform(-4, 8)])
+        ped_spots.append((s, lat))
         x, y = road_xy(s, lat)
         poses.append((name, (x, y, height(s)), quat(0, 0, random.uniform(-math.pi, math.pi))))
+    if random.random() < PERSON_FOCUS:
+        s, lat = random.choice(ped_spots)
+        return poses, s, lat, True
     # Focus on a random vehicle, biased towards motorbikes
     bikes = [t for t, (n, *_) in zip(taken, VEHICLES) if n.startswith('motorbike')]
-    s, lat, _ = random.choice(bikes if random.random() < 0.6 else taken)
-    return poses, s, lat
+    s, lat, _ = random.choice(bikes if random.random() < BIKE_FOCUS else taken)
+    return poses, s, lat, False
 
 
-def camera_pose(s, lat):
+def camera_pose(s, lat, low=False):
     """Drone-like viewpoint looking at road point (s, lat)."""
-    alt = random.uniform(4.0, 35.0)                 # metres above the road
+    alt = random.uniform(4.0, 16.0 if low else 35.0)  # metres above the road
     pitch = random.uniform(math.radians(25), math.radians(90))
     yaw = ROAD_YAW + random.choice([0, math.pi]) + random.gauss(0, 0.6)
     if random.random() < 0.3:
@@ -159,12 +173,16 @@ class Capture:
 
 
 def main():
+    global PERSON_FOCUS, BIKE_FOCUS
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default='finetune/data')
     ap.add_argument('--n', type=int, default=2000)
     ap.add_argument('--seed', type=int, default=0)
     ap.add_argument('--split', default=None, help='force all samples into this split (e.g. test)')
+    ap.add_argument('--person-focus', type=float, default=PERSON_FOCUS)
+    ap.add_argument('--bike-focus', type=float, default=BIKE_FOCUS)
     args = ap.parse_args()
+    PERSON_FOCUS, BIKE_FOCUS = args.person_focus, args.bike_focus
     random.seed(args.seed)
 
     for split in ('train', 'val', 'test'):
@@ -175,14 +193,14 @@ def main():
     deadline = time.time() + 15
     while cap.latest_stamp() == 0:
         if time.time() > deadline:
-            sys.exit('no frames on /datacam/image - is `gz sim -s -r worlds/datagen.sdf` running '
+            sys.exit('no frames on /datacam/image - is `gz sim -s -r sim/worlds/datagen.sdf` running '
                      'with the same GZ_IP?')
         time.sleep(0.1)
 
     counts, t0, i = {}, time.time(), 0
     while i < args.n:
-        poses, s, lat = scatter_traffic()
-        poses.append(camera_pose(s, lat))
+        poses, s, lat, low = scatter_traffic()
+        poses.append(camera_pose(s, lat, low))
         if not cap.set_poses(poses):
             continue
         # Skip one frame so the render surely reflects the new poses

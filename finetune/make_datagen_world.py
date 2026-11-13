@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build worlds/datagen.sdf from worlds/default.sdf for YOLO dataset capture.
+"""Build sim/worlds/datagen.sdf from sim/worlds/default.sdf for YOLO dataset capture.
 
 Adds to every traffic vehicle / pedestrian a Label plugin holding its COCO
 class id + 1 (label 0 is avoided), and a static 'datacam' model carrying an
@@ -13,8 +13,8 @@ import os
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, '..', 'worlds', 'default.sdf')
-DST = os.path.join(HERE, '..', 'worlds', 'datagen.sdf')
+SRC = os.path.join(HERE, '..', 'sim', 'worlds', 'default.sdf')
+DST = os.path.join(HERE, '..', 'sim', 'worlds', 'datagen.sdf')
 
 # model uri -> COCO class id
 COCO_ID = {
@@ -66,8 +66,20 @@ def add_label(match):
     return block.replace('    </include>', plugin + '    </include>')
 
 
+N_PEDESTRIANS = 14  # default.sdf has 2; datagen needs far more person samples
+
+
+def add_pedestrians(sdf):
+    extra = ''.join(
+        f'    <include>\n      <pose>0 0 0 0 0 0</pose>\n'
+        f'      <uri>model://casual_female</uri>\n'
+        f'      <name>casual_female_{i}</name>\n    </include>\n'
+        for i in range(3, N_PEDESTRIANS + 1))
+    return sdf.replace('  </world>', extra + '  </world>')
+
+
 def main():
-    sdf = open(SRC).read()
+    sdf = add_pedestrians(open(SRC).read())
     sdf = re.sub(r'    <include>.*?    </include>', add_label, sdf, flags=re.S)
     sdf = sdf.replace('  </world>', CAMERA + '  </world>')
     open(DST, 'w').write(sdf)

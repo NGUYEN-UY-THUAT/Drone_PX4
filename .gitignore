@@ -12,3 +12,5 @@ __pycache__/
 finetune/data/
 finetune/runs/
 finetune/train.log
+logs/
+/web/

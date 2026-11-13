@@ -1,0 +1,246 @@
+{
+ "window": [
+  132.2,
+  252.28
+ ],
+ "gt": 173,
+ "counted": 136,
+ "tp": 135,
+ "fn": 38,
+ "fp": 1,
+ "precision": 0.9926470588235294,
+ "recall": 0.7803468208092486,
+ "f1": 0.8737864077669902,
+ "q_gt": 86.44237175216522,
+ "q_cnt": 67.95469686875416,
+ "cls_ok": 135,
+ "per_class": {
+  "Ô tô": [
+   60,
+   57,
+   57
+  ],
+  "Xe máy": [
+   80,
+   48,
+   47
+  ],
+  "Xe buýt": [
+   10,
+   10,
+   10
+  ],
+  "Xe tải": [
+   23,
+   21,
+   21
+  ]
+ },
+ "dt_mean": 2.9629629630192168e-05,
+ "dt_std": 0.031980535918595905,
+ "fn_list": [
+  [
+   132.952,
+   "pickup_2",
+   "←"
+  ],
+  [
+   133.064,
+   "hatchback_blue_1",
+   "→"
+  ],
+  [
+   138.46,
+   "motorbike_white_1",
+   "→"
+  ],
+  [
+   139.12,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   139.852,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   140.54,
+   "motorbike_red_1",
+   "→"
+  ],
+  [
+   149.828,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   150.34,
+   "motorbike_blue_2",
+   "←"
+  ],
+  [
+   150.536,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   151.164,
+   "motorbike_red_1",
+   "→"
+  ],
+  [
+   151.432,
+   "motorbike_red_2",
+   "←"
+  ],
+  [
+   152.388,
+   "motorbike_white_2",
+   "←"
+  ],
+  [
+   153.788,
+   "hatchback_red_1",
+   "←"
+  ],
+  [
+   160.764,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   160.936,
+   "motorbike_blue_2",
+   "←"
+  ],
+  [
+   161.112,
+   "pickup_2",
+   "←"
+  ],
+  [
+   162.156,
+   "motorbike_red_1",
+   "→"
+  ],
+  [
+   171.0,
+   "motorbike_white_1",
+   "→"
+  ],
+  [
+   171.424,
+   "motorbike_black_2",
+   "←"
+  ],
+  [
+   175.388,
+   "motorbike_white_2",
+   "←"
+  ],
+  [
+   182.42,
+   "motorbike_white_1",
+   "→"
+  ],
+  [
+   183.176,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   183.936,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   185.152,
+   "suv_1",
+   "→"
+  ],
+  [
+   196.212,
+   "motorbike_black_2",
+   "←"
+  ],
+  [
+   196.408,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   207.46,
+   "motorbike_white_1",
+   "→"
+  ],
+  [
+   208.26,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   211.16,
+   "motorbike_blue_2",
+   "←"
+  ],
+  [
+   212.772,
+   "motorbike_white_2",
+   "←"
+  ],
+  [
+   218.916,
+   "motorbike_white_1",
+   "→"
+  ],
+  [
+   219.708,
+   "motorbike_black_1",
+   "→"
+  ],
+  [
+   220.468,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   225.032,
+   "motorbike_blue_2",
+   "←"
+  ],
+  [
+   232.776,
+   "motorbike_blue_1",
+   "→"
+  ],
+  [
+   239.224,
+   "motorbike_white_2",
+   "←"
+  ],
+  [
+   249.916,
+   "motorbike_red_2",
+   "←"
+  ],
+  [
+   250.86,
+   "motorbike_white_2",
+   "←"
+  ]
+ ],
+ "fp_list": [
+  [
+   183.15,
+   "Xe máy",
+   "↓"
+  ]
+ ],
+ "conf": {
+  "Ô tô->Ô tô": 57,
+  "Xe máy->Xe máy": 47,
+  "Xe buýt->Xe buýt": 10,
+  "Xe tải->Xe tải": 21
+ }
+}
